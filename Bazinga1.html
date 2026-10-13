@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bazinga</title>
+<style>
+:root{--bg:#f4f6fb;--fg:#111827;--card:#fff;--mut:#6b7280;--line:#d8dde8;--acc:#16a34a;--bad:#dc2626;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1020;--fg:#eef2ff;--card:#151c33;--mut:#93a0bd;--line:#26304f;--acc:#22c55e;--bad:#f87171}}
+:root[data-theme="dark"]{--bg:#0b1020;--fg:#eef2ff;--card:#151c33;--mut:#93a0bd;--line:#26304f;--acc:#22c55e;--bad:#f87171}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+#app{max-width:480px;margin:0 auto;padding:16px}
+h1{font-size:30px;margin:8px 0 4px}h2{font-size:20px;margin:12px 0 8px}.mut{color:var(--mut);font-size:14px}
+.top{display:flex;justify-content:space-between;color:var(--mut);font-size:14px;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.chip,.btn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;padding:10px 12px;font:inherit;cursor:pointer}
+.chip.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.btn{background:var(--acc);color:#fff;border:0;font-weight:700;width:100%;padding:14px;margin-top:10px}
+.btn.ghost{background:var(--card);color:var(--fg);border:1px solid var(--line)}.btn:disabled{opacity:.4}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.slot{border:1px dashed var(--line);border-radius:10px;padding:6px;text-align:center;font-size:12px;min-height:64px;background:var(--card)}
+.slot.act{border:2px solid var(--acc)}.slot b{display:block;font-size:11px;color:var(--mut)}
+.card{display:block;width:100%;text-align:left;margin:8px 0;padding:12px;border-radius:14px;background:var(--card);color:var(--fg);border:2px solid var(--c);font:inherit;cursor:pointer}
+.card b{font-size:18px}.card small{display:block;color:var(--mut)}
+.Base{--c:#64748b}.Especial{--c:#a855f7}.Variante{--c:#14b8a6}.Lenda{--c:#f5b301;box-shadow:0 0 18px #f5b30166}
+.tag{color:var(--c);font-weight:700}
+.st{display:flex;gap:12px;margin-top:6px;color:var(--mut)}.st .on{color:var(--fg);font-weight:800}
+.score{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center;margin:12px 0}.score b{font-size:32px}
+.good{color:var(--acc);margin:4px 0}.bad{color:var(--bad);margin:4px 0}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0}
+.pitch{background:repeating-linear-gradient(#2f8f4e 0 38px,#2a8347 38px 76px);border:3px solid #fff8;border-radius:14px;padding:14px 6px;display:flex;flex-direction:column;gap:14px;margin:10px 0}
+.row{display:flex;justify-content:center;gap:14px}.row:empty{display:none}.sp{display:flex;flex-direction:column;align-items:center;width:84px}
+.spot{width:58px;height:58px;border-radius:50%;border:3px dashed #fffa;background:#0003;color:#fff;font:700 12px system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;line-height:1.1}
+.spot.free{border-style:solid;border-color:#ffe14d;animation:pulse 1s infinite}.spot.has{border:3px solid var(--c);background:#0b1020;cursor:default}
+.nm{color:#fff;font:700 12px system-ui;text-shadow:0 1px 2px #000;margin-top:3px;text-align:center}
+.card.rolling{min-height:84px;opacity:.85;border-style:dashed;animation:shake .12s infinite}.spot.mv{box-shadow:0 0 0 3px #ffe14d;transform:scale(1.1)}.pitch.static .spot{pointer-events:none}
+.pop{animation:pop .45s cubic-bezier(.2,1.6,.4,1)}.card.sel{box-shadow:0 0 0 3px var(--acc)}
+@keyframes pop{from{transform:scale(.6) rotate(-4deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes pulse{50%{transform:scale(1.1)}}@keyframes shake{0%{transform:translateX(-2px)}50%{transform:translateX(2px)}}
+#mb{position:fixed;right:10px;top:calc(8px + env(safe-area-inset-top,0px));z-index:9;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 9px;font-size:16px;cursor:pointer}
+.cmp{display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;gap:4px;margin:8px 0}
+.sp{position:relative}.bd{text-decoration:none;position:absolute;top:-6px;right:2px;z-index:2;font:800 11px system-ui;color:#fff;background:#16a34a;border-radius:9px;padding:1px 5px}.bd.neg{background:#dc2626}
+.mini{padding:5px 3px;gap:5px;border-width:2px;margin:6px 0}.mini .row{gap:4px}.mini .sp{width:66px}.mini .spot{width:34px;height:34px;border-width:2px;font-size:10px}.mini .nm{font-size:10px;margin-top:1px}
+.spot.gfx{animation:gol .9s}@keyframes gol{0%{transform:scale(1)}20%{transform:scale(1.5);box-shadow:0 0 0 6px #ffe14d,0 0 24px #ffe14d}100%{transform:scale(1)}}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));background:var(--card);color:var(--fg);border:1px solid var(--acc);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;max-width:90%;text-align:center}
+</style></head><body><div id="app"></div><div id="toast"></div>
+<script>
+const P=[{"n": "Loki", "o": "CDR", "a": 91, "v": 91, "g": 82, "t": "Base"}, {"n": "Void", "o": "CDR", "a": 91, "v": 90, "g": 83, "t": "Base"}, {"n": "Ace", "o": "CDR", "a": 90, "v": 88, "g": 79, "t": "Base"}, {"n": "Milagre", "o": "CDR", "a": 79, "v": 79, "g": 90, "t": "Base"}, {"n": "Leone", "o": "CDR", "a": 89, "v": 89, "g": 84, "t": "Base"}, {"n": "Nuvem", "o": "CDR", "a": 79, "v": 88, "g": 85, "t": "Base"}, {"n": "Xupista", "o": "CDR", "a": 78, "v": 81, "g": 82, "t": "Base"}, {"n": "Jaczinn", "o": "CDR", "a": 84, "v": 81, "g": 83, "t": "Base"}, {"n": "Nabuco", "o": "CDR", "a": 75, "v": 82, "g": 88, "t": "Base"}, {"n": "Abuco", "o": "CDR", "a": 67, "v": 69, "g": 71, "t": "Base"}, {"n": "Neo", "o": "HDT", "a": 90, "v": 91, "g": 81, "t": "Base"}, {"n": "Alegra", "o": "HDT", "a": 83, "v": 81, "g": 72, "t": "Base"}, {"n": "Kazi", "o": "HDT", "a": 77, "v": 80, "g": 84, "t": "Base"}, {"n": "Zé", "o": "HDT", "a": 80, "v": 81, "g": 81, "t": "Base"}, {"n": "Rei Pelé", "o": "HDT", "a": 76, "v": 80, "g": 80, "t": "Base"}, {"n": "Veloz e Rápido", "o": "HDT", "a": 65, "v": 67, "g": 67, "t": "Base"}, {"n": "Norisk", "o": "HDT", "a": 67, "v": 72, "g": 70, "t": "Base"}, {"n": "Neguin", "o": "HDT", "a": 64, "v": 65, "g": 69, "t": "Base"}, {"n": "Judeu", "o": "HDT", "a": 61, "v": 63, "g": 64, "t": "Base"}, {"n": "Jacob29", "o": "HDT", "a": 59, "v": 60, "g": 61, "t": "Base"}, {"n": "Bolsonabo", "o": "HDT", "a": 60, "v": 61, "g": 62, "t": "Base"}, {"n": "Bengolo", "o": "CDR", "a": 68, "v": 76, "g": 81, "t": "Base"}, {"n": "Buco", "o": "ACL", "a": 65, "v": 76, "g": 81, "t": "Base"}, {"n": "Xuco", "o": "ACL", "a": 50, "v": 51, "g": 54, "t": "Base"}, {"n": "Zuco", "o": "ACL", "a": 54, "v": 59, "g": 65, "t": "Base"}, {"n": "Ego Shiny", "o": "Outro", "a": 70, "v": 74, "g": 69, "t": "Base"}, {"n": "Guxw", "o": "Outro", "a": 67, "v": 69, "g": 67, "t": "Base"}, {"n": "Larpal", "o": "Outro", "a": 79, "v": 86, "g": 79, "t": "Base"}, {"n": "Fumasa", "o": "Outro", "a": 70, "v": 74, "g": 71, "t": "Base"}, {"n": "Gutowiski", "o": "Outro", "a": 73, "v": 83, "g": 79, "t": "Base"}, {"n": "Loki(Bola de Ouro)", "o": "CDR", "a": 94, "v": 95, "g": 83, "t": "Especial"}, {"n": "Void (Chuteira de Ouro)", "o": "CDR", "a": 96, "v": 92, "g": 83, "t": "Especial"}, {"n": "Ace (Versus HDT)", "o": "CDR", "a": 95, "v": 90, "g": 80, "t": "Especial"}, {"n": "Leone (27 Gols)", "o": "CDR", "a": 96, "v": 89, "g": 83, "t": "Especial"}, {"n": "Milagre (35 Defesas)", "o": "CDR", "a": 82, "v": 88, "g": 96, "t": "Especial"}, {"n": "Nuvem (X3)", "o": "CDR", "a": 87, "v": 90, "g": 90, "t": "Especial"}, {"n": "Xupista (Imersão)", "o": "CDR", "a": 91, "v": 93, "g": 89, "t": "Especial"}, {"n": "Jaczinn(Low-Cortisol)", "o": "CDR", "a": 92, "v": 89, "g": 89, "t": "Especial"}, {"n": "Nabuco(Casa do Fofo)", "o": "CDR", "a": 91, "v": 87, "g": 95, "t": "Especial"}, {"n": "Neo (Golden Boy)", "o": "HDT", "a": 89, "v": 93, "g": 79, "t": "Especial"}, {"n": "Neo com Ódio", "o": "HDT", "a": 93, "v": 90, "g": 80, "t": "Especial"}, {"n": "Alegra (Hipotético)", "o": "HDT", "a": 90, "v": 85, "g": 74, "t": "Especial"}, {"n": "Kazi (Mangá)", "o": "HDT", "a": 80, "v": 86, "g": 95, "t": "Especial"}, {"n": "Zé (HEL)", "o": "HDT", "a": 90, "v": 81, "g": 77, "t": "Especial"}, {"n": "Buco (Espectro)", "o": "ACL", "a": 71, "v": 83, "g": 94, "t": "Especial"}, {"n": "Bengolo (Tiki Tiki)", "o": "CDR", "a": 81, "v": 84, "g": 91, "t": "Especial"}, {"n": "Larpal 0 Ping", "o": "Outro", "a": 87, "v": 92, "g": 89, "t": "Especial"}, {"n": "Gugui (Jambalaya)", "o": "JBL", "a": 91, "v": 91, "g": 91, "t": "Especial"}, {"n": "Leone (Bib's Ball)", "o": "CDB", "a": 92, "v": 89, "g": 78, "t": "Especial"}, {"n": "Neo com Sono", "o": "HDT", "a": 82, "v": 84, "g": 71, "t": "Variante"}, {"n": "Neo (Mobile)", "o": "HDT", "a": 81, "v": 84, "g": 79, "t": "Variante"}, {"n": "Void (Mobile)", "o": "CDR", "a": 80, "v": 83, "g": 77, "t": "Variante"}, {"n": "Veloz e Rápido (X6)", "o": "HDT", "a": 69, "v": 69, "g": 82, "t": "Variante"}, {"n": "Norisk (Tela Cheia)", "o": "HDT", "a": 68, "v": 72, "g": 70, "t": "Variante"}, {"n": "Espirito do Sal", "o": "CDR", "a": 83, "v": 90, "g": 79, "t": "Variante"}, {"n": "Xupista (Imperador)", "o": "CDR", "a": 80, "v": 85, "g": 84, "t": "Variante"}, {"n": "Void (Palhaço)", "o": "CDR", "a": 80, "v": 82, "g": 79, "t": "Variante"}, {"n": "Athânio", "o": "IFPI", "a": 100, "v": 99, "g": 85, "t": "Lenda"}, {"n": "Paulo Dados", "o": "IFPI", "a": 95, "v": 100, "g": 90, "t": "Lenda"}, {"n": "Daniel", "o": "IFPI", "a": 86, "v": 99, "g": 100, "t": "Lenda"}, {"n": "Fofo", "o": "...", "a": 96, "v": 100, "g": 100, "t": "Lenda"}, {"n": "Fura Caxumba", "o": "...", "a": 100, "v": 50, "g": 50, "t": "Lenda"}];
+const HW=.3,W={Base:77,Variante:9,Especial:13,Lenda:1},$=s=>document.querySelector(s),R=h=>{$('#app').innerHTML=h;scrollTo(0,0)};
+const FORMS={def:['GK','VOL','VOL','ATA'],eq:['GK','VOL','ATA','ATA'],of:['GK','ATA','ATA','ATA'],ret:['GK','VOL','VOL','VOL']};
+const FN={def:'Defensiva · 2 VOL + 1 ATA',eq:'Equilibrada · 1 VOL + 2 ATA',of:'Ofensiva · 3 ATA',ret:'Retranca · 3 VOL'};
+const SN={def:'Defensivo',eq:'Equilibrado',of:'Ofensivo'};
+const STG=['16 avos de final','Oitavas de final','Quartas de final','Semifinal','Final'],DIFL=['Fácil','Médio','Médio','Difícil','Extremo'],DIF=[[.05,.45],[.30,.70],[.40,.80],[.55,.90],[.72,1]];
+let AC,mute=false;function tone(f,d=.1,ty='sine',v=.12,t0=0){if(mute)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+t0;o.type=ty;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(v*.18,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
+const arp=(fs,d,ty,v,g)=>fs.forEach((f,i)=>tone(f,d,ty,v,i*g));
+const SND={tick:()=>tone(90+Math.random()*90,.09,'sine',.07),pop:()=>arp([520,780],.14,'triangle',.14,.08),rare:()=>arp([523,659,784],.2,'triangle',.16,.1),legend:()=>arp([523,659,784,1047,1319],.3,'triangle',.18,.09),put:()=>tone(240,.12,'square',.08),
+goal:()=>arp([392,523,659,784],.18,'square',.09,.08),conc:()=>arp([180,140],.4,'sawtooth',.09,.15),whistle:()=>tone(2200,.4,'sine',.08),win:()=>arp([523,659,784,1047],.25,'triangle',.16,.12),lose:()=>arp([330,262,196],.35,'triangle',.14,.18)};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));let skip=false,S,C={form:'eq',style:'eq',mode:'classico'};
+const stat=(p,r)=>r=='ATA'?p.a:r=='VOL'?p.v:p.g,rnd=a=>a[Math.random()*a.length|0];
+function chips(k,o){return Object.entries(o).map(([v,l])=>`<button class="chip ${C[k]==v?'on':''}" onclick="C.${k}='${v}';home()">${l}</button>`).join('')}
+const LK='bazinga_livro_v1';let LV={};try{LV=JSON.parse(localStorage.getItem(LK)||'{}')||{}}catch(e){LV={}}
+const foundN=()=>Object.keys(LV).length,totalN=()=>SYN.length+AVR.length+1;
+function toast(m){const e=$('#toast');if(!e)return;e.textContent=m;e.style.opacity=1;clearTimeout(window._tt);window._tt=setTimeout(()=>{e.style.opacity=0},3200)}
+function discover(m){const nw=[],add=(k,l)=>{if(!LV[k]){LV[k]=1;nw.push(l)}};
+(m.links||[]).forEach(l=>add('I|'+l.n+'|'+l.a+'|'+l.b,l.n));(m.avs||[]).forEach(l=>add('A|'+l.n+'|'+l.a+'|'+l.b,l.n));
+if(m.chem&&m.chem.n&&m.chem.n.startsWith('GEBA'))add('I|GEBA','GEBA');
+if(nw.length){try{localStorage.setItem(LK,JSON.stringify(LV))}catch(e){}toast('📖 Livro atualizado: '+nw.join(', '))}}
+function livro(){const row=(k,ti,sub)=>LV[k]?`<div class=box><b>${ti}</b><br><span class=mut>${sub}</span></div>`:`<div class=box style="opacity:.5">🔒 <b>???</b></div>`,cnt=p=>Object.keys(LV).filter(k=>k[0]==p).length;
+const I=[row('I|GEBA','GEBA','Leone + Ace + Milagre + Loki · +3 em todos (especial)')].concat(SYN.map(s=>row('I|'+s[0]+'|'+s[1]+'|'+s[2],s[0],s[1]+' + '+s[2]+' · +1 em cada'))),
+A=AVR.map(s=>row('A|'+s[0]+'|'+s[1]+'|'+s[2],s[0],s[1]+' + '+s[2]+' · −1 em cada'));
+R(`<h1>📖 Livro de Reações</h1><p class=mut>As reações aparecem aqui quando você as descobre, no seu time ou no do rival. Nada se perde ao atualizar a página.</p>
+<h2>🔗 Imersões Químicas (${cnt('I')}/${I.length})</h2>${I.join('')}<h2>💢 Aversões Químicas (${cnt('A')}/${A.length})</h2>${A.join('')}<button class=btn onclick="home()">Voltar</button>`)}
+function home(){R(`<h1>⚽ Bazinga!</h1><p class=mut>⚗️ Reação Química: time inteiro da mesma origem ganha +2 em todos os jogadores.</p><p class=mut>Monte um time de 4 e vença 5 partidas, dos 16 avos à final. O sonho: 5 a 0, campeão sem sofrer gol.</p>
+<h2>Formação</h2><div class=chips>${chips('form',FN)}</div><h2>Estilo</h2><div class=chips>${chips('style',SN)}</div>
+<h2>Modo</h2><div class=chips>${chips('mode',{classico:'Clássico (vê os níveis)',almanaque:'Almanaque (às cegas)'})}</div>
+<button class=btn onclick="start()">Jogar</button><button class="btn ghost" onclick="livro()">📖 Livro de Reações (${foundN()}/${totalN()})</button>`)}
+function tier(){let r=Math.random()*100,c=0;for(const k in W){c+=W[k];if(r<c)return k}return'Base'}
+const wt=p=>p.t=='Base'&&Math.max(p.a,p.v,p.g)>=90?HW:1,wpick=a=>{let r=Math.random()*a.reduce((s,p)=>s+wt(p),0);for(const p of a){r-=wt(p);if(r<=0)return p}return a[a.length-1]};
+function deal(){const ex=new Set(S.team.filter(Boolean).map(p=>p.n)),out=[];while(out.length<3){const tr=tier();let pl=P.filter(p=>p.t==tr&&!ex.has(p.n));if(!pl.length)pl=P.filter(p=>!ex.has(p.n));const p=wpick(pl);ex.add(p.n);out.push(p)}S.cards=out}
+function roll(){S.rev=[0,0,0];S.sel=null;S.pop=-1;draft();const iv=setInterval(()=>{S.rev.forEach((v,i)=>{const g=$('#g'+i);if(!v&&g){const p=rnd(P);g.innerHTML=`<b>${p.n}</b><small>sorteando...</small>`}});SND.tick()},95);
+[700,950,1200].forEach((ms,i)=>setTimeout(()=>{S.rev[i]=1;S.pop=i;if(i==2)clearInterval(iv);draft();const tr=S.cards[i].t;SND[tr=='Lenda'?'legend':tr=='Especial'?'rare':'pop']()},ms))}
+const full=()=>S.rev.every(Boolean);
+function liveBs(){const ix=S.team.map((p,i)=>p?i:-1).filter(i=>i>=0),bs=S.team.map(()=>0);if(ix.length<2)return bs;const m=mk(ix.map(i=>S.team[i]),ix.map(i=>S.roles[i]),'eq','x');ix.forEach((i,j)=>bs[i]=m.bs[j]);discover(m);return bs}
+function field(team,roles,o){const order=o.flip?['GK','VOL','ATA']:['ATA','VOL','GK'],pre=o.pre||'';
+return `<div class="pitch ${o.click?'':'static'} ${o.mini?'mini':''}">${order.map(r=>`<div class=row>${roles.map((x,i)=>{if(x!=r)return'';const p=team[i],c=o.click?`onclick="tap(${i})"`:'',b=o.bs?o.bs[i]||0:0,id=k=>pre?`id="${pre}${k}${i}"`:'';
+return p?`<div class=sp>${o.bd&&b?`<u class="bd ${b<0?'neg':''}">${b>0?'+':''}${b}</u>`:''}<button ${id('s')} class="spot has ${p.t} ${o.mv===i?'mv':''}" ${c}><i>${x}</i>${o.show?stat(p,x)+b:''}</button><span ${id('n')} class=nm>${p.n}</span></div>`:`<div class=sp><button class="spot ${o.sel?'free':''}" ${c}><i>${x}</i>${o.sel&&o.show?stat(o.sel,x):''}</button></div>`}).join('')}</div>`).join('')}</div>`}
+function draft(){const blind=S.mode=='almanaque',r=S.sel!=null?S.cards[S.sel]:null;
+R(`<div class=top><span>Escolha ${S.team.filter(Boolean).length+1}/4</span><span>${FN[S.form]}</span></div>
+${S.cards.map((p,i)=>S.rev[i]?`<button class="card ${p.t} ${i==S.pop?'pop':''} ${i==S.sel?'sel':''}" onclick="selc(${i})"><b>${p.n}</b><small><span class=tag>${p.t}</span> · ${p.o}</small>
+${blind?'<div class=st>níveis ocultos</div>':`<div class=st><span>ATA ${p.a}</span><span>VOL ${p.v}</span><span>GK ${p.g}</span></div>`}</button>`:`<div class="card rolling" id="g${i}"></div>`).join('')}
+<button class="btn ghost" ${S.rerolls&&full()?'':'disabled'} onclick="S.rerolls--;S.mv=null;deal();roll()">🎲 Rerolar (${S.rerolls} restante${S.rerolls==1?'':'s'})</button>
+${chemHint()}<p class=mut id=hint>${S.mv!=null?'Toque em outra posição para trocar de lugar.':r?'Toque na posição do campo onde '+r.n+' vai jogar 👇':'Toque em uma carta e depois na posição no campo. Já escalou alguém? Toque nele para trocar de posição.'}</p>${field(S.team,S.roles,{click:1,show:!blind,sel:r,mv:S.mv,bs:liveBs(),bd:1})}`)}
+function selc(i){if(!full())return;S.mv=null;S.sel=i;SND.put();draft()}
+function tap(i){const p=S.team[i];
+if(S.mv!=null){if(S.mv!=i){[S.team[S.mv],S.team[i]]=[S.team[i],S.team[S.mv]];SND.put()}S.mv=null;return S.rv?review():draft()}
+if(p){S.mv=i;SND.put();return S.rv?review():draft()}
+if(S.sel==null||!full()){const h=$('#hint');if(h)h.textContent='⚠️ Primeiro toque em uma carta!';return}
+S.team[i]=S.cards[S.sel];SND.put();S.sel=null;if(S.team.every(Boolean))return review();deal();roll()}
+function start(){S={...C,team:[null,null,null,null],roles:FORMS[C.form],rerolls:2,round:0,log:[],conc:0,rev:[1,1,1],mv:null,rv:0};deal();roll()}
+const QUAD=['Loki','Leone','Ace','Milagre'];
+const SYN=[['Esquema','Ace','Milagre'],['Gênios','Neo','Loki'],['Dupla do Ano','Leone','Loki'],['Assistentes','Leone','Neo'],['Criaturas','Nabuco','Abuco'],['Sulistas','Larpal','Gutowiski'],['Dengosos','Xupista','Veloz e Rápido'],['Muro','Nabuco','Nuvem'],['Love-me','Jaczinn','Void'],['Veloz e Rápido Glaze','Neo','Veloz e Rápido'],['Glaze absurdo','Fumasa','Void'],['Glaze','Fumasa','Guxw'],['Pai e Mãe HDT','Neo','Kazi'],['L2','Athânio','Daniel'],['G.O.A.T','Athânio','Paulo Dados'],['L4','Paulo Dados','Daniel'],
+['Egoístas','Ace','Void'],['Luís Correia','Xupista','Fofo'],['Fofinho','Void','Fofo'],['Anjo e Demônio','Fofo','Athânio'],['Receptáculo','Nuvem','Fura Caxumba'],['Sebastião','Fura Caxumba','Xupista'],['Inferno','Fura Caxumba','Athânio'],['Glaze (Kazi+Loki)','Kazi','Loki'],['X3 da HDT','Alegra','Neo']];
+const AVR=[['Ragebait','Nuvem','Void'],['Ragebait','Ace','Nuvem'],['Gol Contra','Void','Milagre'],['Descabelar o Palhaço','Xupista','Void'],['Defesa HDT','Kazi','Rei Pelé'],['Irmãos Binário','Neo','Void'],['Ódio','Fumasa','Ace']];
+const ALIAS=[['Gugui','Nuvem'],['Espirito do Sal','Void']];
+const KEYS=P.filter(p=>p.t=='Base'||p.t=='Lenda').map(p=>p.n).sort((x,y)=>y.length-x.length);
+const who=p=>{const al=ALIAS.find(x=>p.n==x[0]||p.n.startsWith(x[0]+' ')||p.n.startsWith(x[0]+'('));return al?al[1]:KEYS.find(k=>p.n==k||p.n.startsWith(k+' ')||p.n.startsWith(k+'('))||p.n};
+const PO=P.filter(p=>who(p)!='Fura Caxumba');
+function chem(team){const os=new Set(team.map(p=>p.o)),ks=new Set(team.map(who));
+if(ks.size==4&&QUAD.every(k=>ks.has(k)))return{b:3,n:'GEBA · Imersão Química especial'};
+if(team.length==4&&os.size==1&&!['Outro','...'].includes(team[0].o))return{b:2,n:'Reação Química · '+team[0].o};return{b:0}}
+const chemTag=(c,tm)=>c.b?`<div class=box style="border-color:var(--acc)">⚗️ <b>${c.n}</b>: +${c.b} em todos<br><span class=mut>${tm.map(p=>p.n).join(', ')}</span></div>`:'';
+const lst=l=>l.map(x=>`<br>• ${x.n}: <b>${x.pl.join(' + ')}</b>`).join('');
+const tags=m=>chemTag(m.chem,m.team)+(m.links.length?`<div class=box style="border-color:var(--acc)">🔗 <b>Imersão Química</b> <span class=mut>(+1)</span>${lst(m.links)}</div>`:'')+(m.avs.length?`<div class=box style="border-color:var(--bad)">💢 <b>Aversão Química</b> <span class=mut>(−1)</span>${lst(m.avs)}</div>`:''); const palTag=m=>(m.pal?`<div class=box style="border-color:var(--bad)">🤡 <b>PALHACINHO!</b> ${m.pn.join(' + ')} ganha +2 em tudo contra ${m.pf.join(' + ')}</div>`:'');
+function chemHint(){const t=S.team.filter(Boolean);if(!t.length||t.length==4)return'';const os=new Set(t.map(p=>p.o));
+return os.size==1&&!['Outro','...'].includes(t[0].o)?`<p class=mut>⚗️ Reação Química em andamento: todos de <b>${t[0].o}</b> (${t.length}/4)</p>`:''}
+function mk(team,roles,style,name,foe){const ks=team.map(who),fk=foe?foe.map(who):[],c=chem(team);
+const det=L=>L.filter(s=>ks.includes(s[1])&&ks.includes(s[2])).map(s=>({n:s[0],a:s[1],b:s[2],pl:team.filter((p,i)=>ks[i]==s[1]||ks[i]==s[2]).map(p=>p.n)}));
+const links=det(SYN),avs=det(AVR),pal=ks.includes('Xupista')&&fk.includes('Void'),pn=pal?team.filter((p,i)=>ks[i]=='Xupista').map(p=>p.n):[],pf=pal?foe.filter(p=>who(p)=='Void').map(p=>p.n):[];
+const cnt=(L,i)=>L.filter(s=>s.a==ks[i]||s.b==ks[i]).length,bs=team.map((p,i)=>c.b+cnt(links,i)-cnt(avs,i)+(pal&&ks[i]=='Xupista'?2:0));
+let aN=0,aD=0,dN=0,dD=0,g=0;team.forEach((p,i)=>{const r=roles[i],k=bs[i],A=p.a+k,V=p.v+k,G=p.g+k;if(r=='ATA'){aN+=A;aD++;dN+=A*.3;dD+=.3}else if(r=='VOL'){aN+=V*.4;aD+=.4;dN+=V;dD++}else{const w=g++?.8:1.5;dN+=G*w;dD+=w;aN+=G*.1;aD+=.1}});
+const d=style=='of'?3:style=='def'?-3:0,att=aN/aD+d,def=dN/dD-d;return{team,roles,att,def,ovr:Math.round((att+def)/2),name,chem:c,links,avs,pal,pn,pf,bs,style}}
+function review(){const f=!S.rv;S.rv=1;S.me=mk(S.team,S.roles,S.style,'Você');const m=S.me;if(f&&m.chem.b)SND.legend();discover(m);
+R(`<h1>Seu time</h1><p class=mut>${FN[S.form]} · ${SN[S.style]}. Quer mudar alguém de posição? Toque no jogador e depois na outra posição.</p>${field(S.team,S.roles,{click:1,show:1,mv:S.mv,bs:m.bs,bd:1})}${tags(m)}<div class=box>Ataque <b>${Math.round(m.att)}</b> · Defesa <b>${Math.round(m.def)}</b> · Geral <b>${m.ovr}</b></div><button class=btn onclick="S.mv=null;preview()">Começar o torneio</button>`)}
+function genOpp(r){const [lo,hi]=DIF[r],roles=FORMS[rnd(Object.keys(FORMS))],used=new Set(),team=roles.map(ro=>{const s=[...PO].sort((x,y)=>stat(x,ro)-stat(y,ro));let b=s.slice(Math.floor(lo*s.length),Math.ceil(hi*s.length)).filter(p=>!used.has(p.n));if(!b.length)b=s.filter(p=>!used.has(p.n));const p=rnd(b);used.add(p.n);return p});
+const star=team.reduce((a,p,i)=>stat(p,roles[i])>stat(a,roles[team.indexOf(a)])?p:a);return mk(team,roles,rnd(['def','eq','of']),'Esquadrão '+star.n)}
+function preview(){const o0=genOpp(S.round),o=S.cur=mk(o0.team,o0.roles,o0.style,o0.name,S.team),m=S.me=mk(S.team,S.roles,S.style,'Você',o0.team),n=Math.round;discover(o);
+R(`<div class=top><span>Fase ${S.round+1}/${STG.length}</span><span>Gols sofridos: ${S.conc}</span></div><h1>${STG[S.round]}</h1><p class=mut>Dificuldade: <b>${DIFL[S.round]}</b></p>
+<b>${o.name}</b>${tags(o)}${palTag(o)}${palTag(m)}${field(o.team,o.roles,{flip:1,show:1,bs:o.bs})}<h2 style="text-align:center;margin:0">⚔️ VS ⚔️</h2><b>Seu time</b>${field(m.team,m.roles,{show:1,bs:m.bs})}
+<div class=box><div class=cmp><span></span><b>Você</b><b>Rival</b><span>Ataque</span><span>${n(m.att)}</span><span>${n(o.att)}</span><span>Defesa</span><span>${n(m.def)}</span><span>${n(o.def)}</span><span>Geral</span><b>${m.ovr}</b><b>${o.ovr}</b></div></div><button class=btn onclick="play()">▶ Jogar partida</button>`)}
+function pois(l){const L=Math.exp(-l);let k=0,p=1;do{k++;p*=Math.random()}while(p>L);return Math.min(k-1,9)}
+function scorer(t){const w=t.team.map((p,i)=>(t.roles[i]=='ATA'?3:t.roles[i]=='VOL'?1.2:.05)*stat(p,t.roles[i])/100);let r=Math.random()*w.reduce((a,b)=>a+b),i=0;while((r-=w[i])>0&&i<3)i++;return t.team[i].n}
+function sim(A,B){const la=1.4*Math.exp((A.att-B.def)/12),lb=1.4*Math.exp((B.att-A.def)/12),g=[pois(la),pois(lb)],ev=[];
+[A,B].forEach((x,s)=>{for(let i=0;i<g[s];i++)ev.push({m:1+Math.random()*300|0,s,who:scorer(x)})});ev.sort((x,y)=>x.m-y.m);
+let ot=0;if(g[0]==g[1]){const s=Math.random()<la/(la+lb)?0:1,m=300+Math.max(1,Math.ceil(-Math.log(1-Math.random())/((la+lb)*3/300)));ev.push({m,s,who:scorer(s?B:A),ot:1});g[s]++;ot=m}
+return{g,ev,win:g[0]>g[1],ot}}
+async function play(){const me=S.me,o=S.cur,res=sim(me,o);let a=0,b=0,ei=0;skip=false;SND.whistle();const gl=[me.team.map(()=>0),o.team.map(()=>0)];
+R(`<div class=top><span>${STG[S.round]}</span><b id=clk>0:00</b></div><b>${o.name}</b>${field(o.team,o.roles,{flip:1,show:1,bs:o.bs,mini:1,pre:'r'})}
+<div class=score><span>Você</span><b id=sc>0 x 0</b><span>Rival</span></div>${field(me.team,me.roles,{show:1,bs:me.bs,mini:1,pre:'m'})}<div id=ev></div><div id=act><button class="btn ghost" onclick="skip=true">⏩ Pular</button></div>`);
+const log=h=>$('#ev').innerHTML+=h,mm=s=>(s/60|0)+':'+String(s%60).padStart(2,'0'),last=res.ot||300;
+function ball(e){const tm=e.s?o:me,i=tm.team.findIndex(p=>p.n==e.who),pr=e.s?'r':'m';if(i<0)return;gl[e.s][i]++;const nm=$('#'+pr+'n'+i),sp=$('#'+pr+'s'+i);
+if(nm)nm.textContent=tm.team[i].n+' '+'⚽'.repeat(gl[e.s][i]);if(sp&&sp.classList){sp.classList.add('gfx');setTimeout(()=>sp.classList.remove('gfx'),950)}}
+for(let m=1;m<=last;m++){if(!skip)await sleep(m>300?40:26);$('#clk').textContent=mm(m);
+if(m==301){log('<p><b>⏱️ OVERTIME!</b> <span class=mut>Empatou aos 5:00. Quem fizer o primeiro gol vence.</span></p>');SND.whistle();if(!skip)await sleep(800)}
+while(ei<res.ev.length&&res.ev[ei].m<=m){const e=res.ev[ei++];e.s?b++:a++;SND[e.s?'conc':'goal']();$('#sc').textContent=a+' x '+b;ball(e);log(`<p class="${e.s?'bad':'good'}">${mm(e.m)} ⚽ ${e.who}${e.s?' ('+o.name+')':''}${e.ot?' <b>— gol de ouro!</b>':''}</p>`);if(!skip)await sleep(700)}}
+log('<p class=mut>🏁 Fim de jogo</p>');if(!skip)await sleep(500);
+S.conc+=res.g[1];S.log.push({st:STG[S.round],o:o.name,g:res.g,ot:!!res.ot,win:res.win,sc:res.ev.filter(e=>!e.s).map(e=>e.who)});
+SND[res.win?'win':'lose']();const last2=res.win&&S.round==STG.length-1,nxt=res.win&&!last2;
+$('#act').innerHTML=`<h2>${res.win?'✅ Vitória!':'❌ Eliminado'}</h2>`+(nxt?`<button class=btn onclick="S.round++;preview()">Próxima fase</button>`:`<button class=btn onclick="end(${res.win})">Ver resultado</button>`)}
+function end(champ){const perfect=champ&&S.conc==0,t=perfect?'🏆 '+STG.length+' A 0 PERFEITO!':champ?'🏆 CAMPEÃO!':'Eliminado: '+STG[S.round];
+const gf=S.log.reduce((s,l)=>s+l.g[0],0),cs=S.log.filter(l=>l.g[1]==0).length,sc={};S.log.forEach(l=>l.sc.forEach(n=>sc[n]=(sc[n]||0)+1));
+const top=Object.entries(sc).sort((x,y)=>y[1]-x[1]),best=[...S.log].sort((x,y)=>(y.g[0]-y.g[1])-(x.g[0]-x.g[1]))[0],art=top.length?`${top[0][0]} (${top[0][1]})`:'ninguém marcou';
+const txt=`${t}\nBazinga 4x4: ${S.me.team.map(p=>p.n).join(', ')}\n`+S.log.map(l=>`${l.st}: ${l.g[0]}x${l.g[1]}${l.ot?' (OT)':''} ${l.win?'✅':'❌'}`).join('\n')+`\n⚽ ${gf} gols · 🧤 ${S.conc} sofridos · 👑 ${art}`;
+window.share=()=>{try{navigator.clipboard.writeText(txt);$('#cp').textContent='Copiado!'}catch(e){$('#cp').textContent='Não foi possível copiar'}};
+R(`<h1>${t}</h1><div class=box>${S.log.map(l=>`${l.st}: <b>${l.g[0]} x ${l.g[1]}</b>${l.ot?' (OT)':''} ${l.win?'✅':'❌'} <span class=mut>${l.o}</span>`).join('<br>')}</div>
+${champ?'':`<h2>Quem eliminou você</h2><b>${S.cur.name}</b>${field(S.cur.team,S.cur.roles,{show:1,bs:S.cur.bs})}`}
+<h2>📊 Números do seu time</h2><div class=box>⚽ Gols marcados: <b>${gf}</b><br>🧤 Gols sofridos: <b>${S.conc}</b><br>🛡️ Jogos sem sofrer gol: <b>${cs} de ${S.log.length}</b><br>👑 Artilheiro: <b>${art}</b><br>🔥 Maior vitória: <b>${best.g[0]} x ${best.g[1]}</b> <span class=mut>(${best.st}, contra ${best.o})</span></div>
+${top.length>1?`<h2>Artilharia</h2><div class=box>${top.slice(0,5).map(([n,g],i)=>`${i+1}. ${n} — <b>${g}</b> gol${g>1?'s':''}`).join('<br>')}</div>`:''}
+<button class=btn onclick="share()"><span id=cp>Copiar resultado</span></button><button class="btn ghost" onclick="home()">Jogar de novo</button>`)}
+home();
+</script></body></html>
