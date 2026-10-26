@@ -98,7 +98,7 @@ R(`<h1>🗂️ Banco de Dados</h1><p class=mut>Jogadores que já apareceram na s
 function livro(){const row=(k,ti,pl,bn)=>LV[k]?`<div class=box><b>${ti}</b><br><span class=mut>${pl} · ${bn}</span></div>`:`<div class=box><b>${ti}</b><br><span class=mut>🔒 Jogadores: ??? · ${bn}</span></div>`,cnt=p=>Object.keys(LV).filter(k=>k[0]==p&&!SK.has(k)).length,sr=s=>row(SKEY(s),s[0],s[1]+' + '+s[2],'+'+(s[3]||1)+' em cada');
 const I=SPEC.map(x=>row(x[3],x[0],x[1],x[2])).concat(SYN.filter(s=>!isSec(s)).map(sr)),A=AVR.map(s=>row('A|'+s[0]+'|'+s[1]+'|'+s[2],s[0],s[1]+' + '+s[2],'−1 em cada')),SS=SYN.filter(s=>isSec(s)&&LV[SKEY(s)]).map(sr);
 R(`<h1>📖 Livro de Reações</h1><p class=mut>Os nomes das reações já aparecem. Os jogadores envolvidos só são revelados quando você a descobre, no seu time ou no do rival.</p>
-<h2>🔗 Imersões Químicas (${cnt('I')}/${I.length})</h2>${I.join('')}${SS.length?`<h2>🕶️ Imersões secretas encontradas</h2>${SS.join('')}`:''}<h2>💢 Aversões Químicas (${cnt('A')}/${A.length})</h2>${A.join('')}<button class=btn onclick="home()">Voltar</button>`)}
+<h2>🔗 Imersões Químicas (${cnt('I')}/${I.length})</h2>${I.join('')}${SS.length?`<h2>🕶️ Imersões secretas encontradas</h2>${SS.join('')}`:''}<h2>💢 Aversões Químicas (${cnt('A')}/${A.length})</h2>${A.join('')}<button class="btn ghost" onclick="conta()">🔑 Revelar código da conta</button><button class=btn onclick="home()">Voltar</button>`)}
 function home(){S=null;listStop();R(`<h1>⚽ Bazinga!</h1>
 <h2>Formação</h2><div class=chips>${chips('form',FN)}</div><h2>Estilo</h2><div class=chips>${chips('style',SN)}</div>
 <h2>Modo</h2><div class=chips>${chips('mode',{classico:'Clássico (vê os níveis)',almanaque:'Almanaque (às cegas)'})}</div>
@@ -206,9 +206,9 @@ ${champ?'':`<h2>Quem eliminou você</h2><b>${S.cur.name}</b>${field(S.cur.team,S
 ${top.length>1?`<h2>Artilharia</h2><div class=box>${top.slice(0,5).map(([n,g],i)=>`${i+1}. ${n} — <b>${g}</b> gol${g>1?'s':''}`).join('<br>')}</div>`:''}
 <button class=btn onclick="share()"><span id=cp>Copiar resultado</span></button><button class="btn ghost" onclick="home()">Jogar de novo</button>`)}
 // ===== ONLINE FOFO 🧸 (copa) · broker público MQTT, sem servidor próprio =====
-const VER='Online Fofo 2.0',BR=[{u:'wss://broker.hivemq.com:8884/mqtt',n:'HiveMQ'},{u:'wss://broker.emqx.io:8084/mqtt',n:'EMQX'},{u:'wss://test.mosquitto.org:8081',n:'Mosquitto'},{u:'wss://mqtt.eclipseprojects.io:443/mqtt',n:'Eclipse'}];
-let O={},O0={name:'',rn:'',mode:'copa'};const RC='ABCDEFGHJKLMNPQRSTUVWXYZ',rid=n=>Array.from({length:n},()=>RC[Math.random()*RC.length|0]).join('');
-const MODE={copa:'🏆 Copa (mata-mata)',liga:'📊 Liga (todos contra todos)'};
+const VER='Online Fofo 3.0',BR=[{u:'wss://broker.hivemq.com:8884/mqtt',n:'HiveMQ'},{u:'wss://broker.emqx.io:8084/mqtt',n:'EMQX'},{u:'wss://test.mosquitto.org:8081',n:'Mosquitto'},{u:'wss://mqtt.eclipseprojects.io:443/mqtt',n:'Eclipse'}];
+let O={},O0={name:'',rn:'',mode:'copa',bo:1};const RC='ABCDEFGHJKLMNPQRSTUVWXYZ',rid=n=>Array.from({length:n},()=>RC[Math.random()*RC.length|0]).join('');
+const MODE={copa:'🏆 Copa (mata-mata)',liga:'📊 Liga (todos contra todos)',x1:'⚔️ X1 (1 contra 1)'},BO={1:'Partida única',3:'Melhor de 3'};
 function netOpen(code,on,bi,host){if(typeof mqtt==='undefined')return null;const o={clientId:'bz'+rid(10),connectTimeout:10000,reconnectPeriod:2500,keepalive:20},T='bazinga4x4/'+code,RT='bazinga4x4/rooms/'+code;
 if(host)o.will={topic:RT,payload:'',qos:1,retain:true};const c=mqtt.connect(BR[bi].u,o);
 c.on('connect',()=>{on({k:'_st',s:'🟢 Conectado ('+BR[bi].n+')'});c.subscribe(T,{qos:1},()=>on({k:'_up'}))});
@@ -222,33 +222,34 @@ function listStart(){if(L.cs.length||typeof mqtt==='undefined')return;L.rooms={}
 c.on('connect',()=>c.subscribe('bazinga4x4/rooms/+',{qos:1}));c.on('error',()=>{});c.on('message',(tp,m)=>{const code=tp.split('/').pop(),s=m.toString();if(!s)delete L.rooms[code];else try{L.rooms[code]={...JSON.parse(s),seen:Date.now()}}catch(e){}rl()});L.cs.push(c)}catch(e){}})}
 function listStop(){L.cs.forEach(c=>{try{c.end(true)}catch(e){}});L={cs:[],rooms:{}}}
 function rl(){const e=$('#rl');if(!e)return;const now=Date.now(),rs=Object.values(L.rooms).filter(r=>now-r.seen<15000).sort((x,y)=>x.n>y.n?1:-1);
-e.innerHTML=rs.length?rs.map(r=>`<button class="card Base" ${r.v==VER&&r.k<16?`onclick="oJoin('${r.c}')"`:'disabled'}><b>${r.n}</b><small>👤 ${r.h} · ${r.k}/16 · ${r.m=='liga'?'Liga':'Copa'}${r.v==VER?'':' · versão diferente'}</small></button>`).join(''):'<p class=mut>Nenhuma sala aberta agora. Crie a sua! (continuo procurando...)</p>'}
+e.innerHTML=rs.length?rs.map(r=>`<button class="card Base" ${r.v==VER&&r.k<(r.m=='x1'?2:16)?`onclick="oJoin('${r.c}')"`:'disabled'}><b>${r.n}</b><small>👤 ${r.h} · ${r.k}/${r.m=='x1'?2:16} · ${r.m=='liga'?'Liga':r.m=='x1'?'X1 · '+(r.b==3?'melhor de 3':'1 jogo'):'Copa'}${r.v==VER?'':' · versão diferente'}</small></button>`).join(''):'<p class=mut>Nenhuma sala aberta agora. Crie a sua! (continuo procurando...)</p>'}
 setInterval(()=>{if($('#rl'))rl()},3000);
 function oLeave(msg){try{O.net&&O.net.close(O.host)}catch(e){}clearTimeout(O.tm);O={};listStop();msg?online(msg):home()}
 const ost=()=>`<p class=mut id=ost>${O.stat||''}</p>`;
-const nmIn=()=>(($('#nm')&&$('#nm').value)||O0.name||'').trim()||'Jogador';
-function online(msg){listStart();R(`<h1>🌐 Online Fofo 🧸</h1><p class=bad>${msg||''}</p><input id=nm class=inp placeholder="Seu nome" maxlength=14 value="${O0.name}" oninput="O0.name=this.value">
-<h2>Salas abertas</h2><div id=rl></div><h2>Criar sala</h2><input class=inp placeholder="Nome da sala" maxlength=20 value="${O0.rn}" oninput="O0.rn=this.value"><div class=chips>${Object.entries(MODE).map(([v,l])=>`<button class="chip ${O0.mode==v?'on':''}" onclick="O0.mode='${v}';online()">${l}</button>`).join('')}</div><button class=btn onclick="oCreate()">Criar sala</button>
+const rname=()=>{const L=P.filter(p=>['Base','Lenda','Secreto'].includes(p.t));return L[Math.random()*L.length|0].n},nmIn=()=>(($('#nm')&&$('#nm').value)||O0.name||'').trim()||rname();
+function online(msg){listStart();R(`<h1>🌐 Online Fofo 🧸</h1><p class=bad>${msg||''}</p><input id=nm class=inp placeholder="Seu nome (vazio = nome de personagem)" maxlength=14 value="${O0.name}" oninput="O0.name=this.value">
+<h2>Salas abertas</h2><div id=rl></div><h2>Criar sala</h2><input class=inp placeholder="Nome da sala" maxlength=20 value="${O0.rn}" oninput="O0.rn=this.value"><div class=chips>${Object.entries(MODE).map(([v,l])=>`<button class="chip ${O0.mode==v?'on':''}" onclick="O0.mode='${v}';online()">${l}</button>`).join('')}</div>${O0.mode=='x1'?`<div class=chips>${Object.entries(BO).map(([v,l])=>`<button class="chip ${O0.bo==v?'on':''}" onclick="O0.bo=${v};online()">${l}</button>`).join('')}</div>`:''}<button class=btn onclick="oCreate()">Criar sala</button>
 <div class=box><input id=cd class=inp placeholder="Ou entre com o código (4 letras)" maxlength=4><button class="btn ghost" onclick="oJoin()">Entrar com o código</button></div><button class="btn ghost" onclick="home()">Voltar</button><p class=mut style="text-align:center">🧸 ${VER}</p>`);rl()}
 async function oCreate(){const nm=nmIn();listStop();
 for(let i=0;i<BR.length;i++){const code=RC[i]+rid(3);O={pid:rid(6),name:nm,code,host:1,bi:i};O.players=[{pid:O.pid,name:nm}];
 R(`<h1>🌐 Online Fofo 🧸</h1><p class=mut>Conectando ao servidor ${BR[i].n}...</p>`);O.net=netOpen(code,oOn,i,1);if(!O.net)return online('Não carregou a biblioteca do modo online (sem internet ou bloqueado aqui). Ele funciona no site hospedado.');
 await new Promise(res=>{O.res=res;O.tm=setTimeout(res,7000)});clearTimeout(O.tm);if(O.up)break;try{O.net.close()}catch(e){}O.pid=0}
 if(!O.up)return online('Nenhum servidor respondeu. Confira a internet (algumas redes bloqueiam WebSocket) e tente de novo.');
-O.mode=O0.mode;O.rn=(O0.rn||'').trim()||('Sala de '+nm);O.H={phase:'lobby',pl:{},order:[O.pid],names:{[O.pid]:nm},r:0,hist:[],msgs:{},mode:O.mode,rn:O.rn};O.H.pl[O.pid]={name:nm};O.lobbyOk=1;hostPub();oLobby()}
+O.mode=O0.mode;O.bo=O0.bo;O.rn=(O0.rn||'').trim()||('Sala de '+nm);O.H={phase:'lobby',pl:{},order:[O.pid],names:{[O.pid]:nm},r:0,hist:[],msgs:{},mode:O.mode,bo:O.bo,rn:O.rn};O.H.pl[O.pid]={name:nm};O.lobbyOk=1;hostPub();oLobby()}
 function oJoin(c){c=(c||($('#cd')&&$('#cd').value)||'').trim().toUpperCase();const bi=RC.indexOf(c[0]);if(c.length!=4||bi<0||bi>=BR.length)return online('Código inválido. Confira as 4 letras.');
 const nm=nmIn();listStop();O={pid:rid(6),name:nm,code:c,host:0,bi,players:[]};O.net=netOpen(c,oOn,bi,0);if(!O.net)return online('Não carregou a biblioteca do modo online (sem internet ou bloqueado aqui). Ele funciona no site hospedado.');
 R(`<h1>🌐 Entrando... 🧸</h1><p class=mut>Procurando a sala ${c} no servidor ${BR[bi].n}.</p>${ost()}`);
 O.tm=setTimeout(()=>{if(!O.lobbyOk)oLeave(O.up?'Sala não encontrada, cheia ou já iniciada.':'Não consegui conectar ao servidor. '+(O.stat||''))},20000)}
-function hostPub(){const H=O.H;if(!O.host||!O.net||!H)return;O.net.pub(H.phase=='lobby'?JSON.stringify({c:O.code,n:H.rn,h:O.name,k:H.order.length,m:H.mode,v:VER}):'')}
-const lobbyMsg=()=>({k:'lobby',pl:O.H.order.map(p=>({pid:p,name:O.H.names[p]})),mode:O.H.mode,rn:O.H.rn});
-function oMode(m){const H=O.H;if(!O.host||H.phase!='lobby')return;H.mode=O.mode=m;osend(lobbyMsg());hostPub();oLobby()}
-function oLobby(){O.screen='lobby';const pl=O.players,md=O.mode||'copa';R(`<h1>🌐 ${O.rn||'Sala'} 🧸</h1><p class=mut>Código: <b>${O.code}</b> · até 16 jogadores, mínimo 4. A sala se reconecta sozinha se você sair um instante.</p>${ost()}
-<div class=chips>${O.host?Object.entries(MODE).map(([v,l])=>`<button class="chip ${md==v?'on':''}" onclick="oMode('${v}')">${l}</button>`).join(''):`<span class=mut>Modo: <b>${MODE[md]}</b></span>`}</div>
-<div class=box>${pl.map(p=>`👤 <b>${p.name}</b>${p.pid==O.pid?' (você)':''}`).join('<br>')}</div>${O.host?`<button class=btn ${pl.length>=4?'':'disabled'} onclick="oStart()">▶ Iniciar ${md=='liga'?'liga':'copa'} (${pl.length})</button>`:'<p class=mut>Aguardando o anfitrião iniciar...</p>'}<button class="btn ghost" onclick="oLeave()">Sair</button>`)}
-function oStart(){const H=O.H;if(!O.host||H.order.length<4||H.phase!='lobby')return;H.phase='draft';hostPub();H.msgs.start={k:'start',pl:H.order.map(p=>({pid:p,name:H.names[p]})),mode:H.mode};osend(H.msgs.start)}
+function hostPub(){const H=O.H;if(!O.host||!O.net||!H)return;O.net.pub(H.phase=='lobby'?JSON.stringify({c:O.code,n:H.rn,h:O.name,k:H.order.length,m:H.mode,b:H.bo,v:VER}):'')}
+const lobbyMsg=()=>({k:'lobby',pl:O.H.order.map(p=>({pid:p,name:O.H.names[p]})),mode:O.H.mode,bo:O.H.bo,rn:O.H.rn});
+function oBo(n){const H=O.H;if(!O.host||H.phase!='lobby')return;H.bo=O.bo=n;osend(lobbyMsg());hostPub();oLobby()}
+function oMode(m){const H=O.H;if(!O.host||H.phase!='lobby')return;if(m=='x1'&&H.order.length>2)return toast('O X1 aceita só 2 jogadores');H.mode=O.mode=m;osend(lobbyMsg());hostPub();oLobby()}
+function oLobby(){O.screen='lobby';const pl=O.players,md=O.mode||'copa';R(`<h1>🌐 ${O.rn||'Sala'} 🧸</h1><p class=mut>Código: <b>${O.code}</b> · até 16 jogadores, mínimo 4 (X1: 2). A sala se reconecta sozinha se você sair um instante.</p>${ost()}
+<div class=chips>${O.host?Object.entries(MODE).map(([v,l])=>`<button class="chip ${md==v?'on':''}" onclick="oMode('${v}')">${l}</button>`).join('')+(md=='x1'?Object.entries(BO).map(([v,l])=>`<button class="chip ${O.bo==v?'on':''}" onclick="oBo(${v})">${l}</button>`).join(''):''):`<span class=mut>Modo: <b>${MODE[md]}${md=='x1'?' · '+BO[O.bo||1]:''}</b></span>`}</div>
+<div class=box>${pl.map(p=>`👤 <b>${p.name}</b>${p.pid==O.pid?' (você)':''}`).join('<br>')}</div>${O.host?`<button class=btn ${pl.length>=(md=='x1'?2:4)?'':'disabled'} onclick="oStart()">▶ Iniciar ${md=='liga'?'liga':md=='x1'?'X1':'copa'} (${pl.length})</button>`:'<p class=mut>Aguardando o anfitrião iniciar...</p>'}<button class="btn ghost" onclick="oLeave()">Sair</button>`)}
+function oStart(){const H=O.H;if(!O.host||H.order.length<(H.mode=='x1'?2:4)||H.phase!='lobby')return;H.phase='draft';hostPub();H.msgs.start={k:'start',pl:H.order.map(p=>({pid:p,name:H.names[p]})),mode:H.mode,bo:H.bo};osend(H.msgs.start)}
 function oSetup(){O.screen='setup';const ch=(k,o)=>Object.entries(o).map(([v,l])=>`<button class="chip ${C[k]==v?'on':''}" onclick="C.${k}='${v}';oSetup()">${l}</button>`).join('');
-R(`<h1>🏁 A ${O.mode=='liga'?'liga':'copa'} começou!</h1><p class=mut>${O.players.length} jogadores. Escolha a formação e o estilo e monte o seu time.</p><h2>Formação</h2><div class=chips>${ch('form',FN)}</div><h2>Estilo</h2><div class=chips>${ch('style',SN)}</div><button class=btn onclick="oMake()">Montar meu time</button>`)}
+R(`<h1>🏁 A ${O.mode=='liga'?'liga':O.mode=='x1'?'partida':'copa'} começou!</h1><p class=mut>${O.players.length} jogadores. Escolha a formação e o estilo e monte o seu time.</p><h2>Formação</h2><div class=chips>${ch('form',FN)}</div><h2>Estilo</h2><div class=chips>${ch('style',SN)}</div><button class=btn onclick="oMake()">Montar meu time</button>`)}
 function oMake(){C.mode='classico';start();S.online=1}
 function oReady(){S.mv=null;O.rdy={k:'ready',team:S.team.map(p=>p.n),form:S.form,style:S.style};osend(O.rdy);O.mine=1;oWait()}
 function oWait(){O.screen='wait';const rd=O.ready||[];R(`<h1>⏳ Aguardando</h1><p class=mut>Seu time está pronto. Esperando os outros jogadores.</p>${ost()}<div class=box>${O.players.map(p=>`${rd.includes(p.pid)?'✅':'⏳'} ${p.name}`).join('<br>')}</div>${O.host?'<button class="btn ghost" onclick="oForce()">⏭️ Começar sem quem não terminou</button>':''}`)}
@@ -261,30 +262,35 @@ H.win=win;H.pend=new Set([...al,...byes]);H.acked=new Set();H.hist.push({label,m
 function ligaSched(ids){const a=ids.slice().sort(()=>Math.random()-.5);if(a.length%2)a.push(null);const n=a.length,out=[];for(let r=0;r<n-1;r++){const ms=[];let bye=null;for(let i=0;i<n/2;i++){const x=a[i],y=a[n-1-i];if(x&&y)ms.push([x,y]);else bye=x||y}out.push({ms,bye});a.splice(1,0,a.pop())}return out}
 const sortTab=H=>Object.entries(H.tab).map(([pid,r])=>({pid,...r})).sort((x,y)=>y.pts-x.pts||(y.gf-y.ga)-(x.gf-x.ga)||y.gf-x.gf||(x.pid<y.pid?-1:1));
 function hostLiga(){const H=O.H,sc=H.sched[H.r];H.r++;const ms=[],teams={},part=[];
-sc.ms.forEach(([a,b])=>{const res=sim(htm(H,a,b),htm(H,b,a),1);ms.push({a,b,res});part.push(a,b);const[x,y]=res.g,A=H.tab[a],B=H.tab[b];A.gf+=x;A.ga+=y;B.gf+=y;B.ga+=x;if(x>y){A.w++;A.pts+=3;B.l++}else if(x<y){B.w++;B.pts+=3;A.l++}else{A.d++;B.d++;A.pts++;B.pts++}});
+sc.ms.forEach(([a,b])=>{const res=sim(htm(H,a,b),htm(H,b,a),1);ms.push({a,b,res});part.push(a,b);const[x,y]=res.g,A=H.tab[a],B=H.tab[b];A.gf+=x;A.ga+=y;B.gf+=y;B.ga+=x;res.ev.forEach(e=>{if(!e.og){const k=(e.s?b:a)+'|'+e.who;H.gs[k]=(H.gs[k]||0)+1}});if(x>y){A.w++;A.pts+=3;B.l++}else if(x<y){B.w++;B.pts+=3;A.l++}else{A.d++;B.d++;A.pts++;B.pts++}});
 if(sc.bye)part.push(sc.bye);part.forEach(p=>{const d=H.pl[p];teams[p]={team:d.team,form:d.form,style:d.style}});
 H.pend=new Set(part);H.acked=new Set();H.hist.push({label:'Rodada '+H.r,ms:ms.map(m=>({a:m.a,b:m.b,g:m.res.g,ot:0}))});
-H.msgs.round={k:'round',r:H.r,label:'Rodada '+H.r+'/'+H.tot,matches:ms,byes:sc.bye?[sc.bye]:[],teams,names:H.names,mode:'liga',tot:H.tot,table:sortTab(H)};osend(H.msgs.round)}
-function hostGo(){const H=O.H;H.phase='cup';H.alive=H.order.filter(p=>H.pl[p]&&H.pl[p].team);if(H.alive.length<2)return osend({k:'kicked',pids:H.order});
-if(H.mode=='liga'){H.tab={};H.alive.forEach(p=>H.tab[p]={p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});H.sched=ligaSched(H.alive);H.tot=H.sched.length;H.r=0;hostLiga()}else hostRound()}
+H.msgs.round={k:'round',r:H.r,label:'Rodada '+H.r+'/'+H.tot,matches:ms,byes:sc.bye?[sc.bye]:[],teams,names:H.names,mode:'liga',tot:H.tot,table:sortTab(H),art:topArt(H)};osend(H.msgs.round)}
+function hostX1(){const H=O.H,[a,b]=H.alive;H.r++;const res=sim(htm(H,a,b),htm(H,b,a)),teams={},label=H.bo==1?'Partida única':'Jogo '+H.r;H.sc[res.win?a:b]++;[a,b].forEach(p=>{const d=H.pl[p];teams[p]={team:d.team,form:d.form,style:d.style}});
+H.pend=new Set([a,b]);H.acked=new Set();H.hist.push({label,ms:[{a,b,g:res.g,ot:!!res.ot}]});H.msgs.round={k:'round',r:H.r,label,matches:[{a,b,res}],byes:[],teams,names:H.names,mode:'x1',bo:H.bo,score:{...H.sc}};osend(H.msgs.round)}
+const topArt=H=>Object.entries(H.gs||{}).map(([k,g])=>{const i=k.indexOf('|');return{o:k.slice(0,i),n:k.slice(i+1),g}}).sort((x,y)=>y.g-x.g||(x.n<y.n?-1:1)).slice(0,3);
+function hostGo(){const H=O.H;H.phase='cup';H.alive=H.order.filter(p=>H.pl[p]&&H.pl[p].team);if(H.alive.length<2||(H.mode=='x1'&&H.alive.length!=2))return osend({k:'kicked',pids:H.order});
+if(H.mode=='x1'){H.sc={[H.alive[0]]:0,[H.alive[1]]:0};H.r=0;hostX1();return}
+if(H.mode=='liga'){H.gs={};H.tab={};H.alive.forEach(p=>H.tab[p]={p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});H.sched=ligaSched(H.alive);H.tot=H.sched.length;H.r=0;hostLiga()}else hostRound()}
 function hostAdv(){const H=O.H;if(H.advR==H.r)return;H.advR=H.r;
-if(H.mode=='liga'){if(H.r>=H.tot){H.phase='end';const tb=sortTab(H);H.msgs.end={k:'end',champ:tb[0].pid,names:H.names,hist:H.hist,mode:'liga',table:tb};osend(H.msgs.end)}else hostLiga();return}
+if(H.mode=='x1'){const need=H.bo==1?1:2,w=H.alive.find(p=>H.sc[p]>=need);if(w){H.phase='end';H.msgs.end={k:'end',champ:w,names:H.names,hist:H.hist,mode:'x1',score:H.sc,bo:H.bo};osend(H.msgs.end)}else hostX1();return}
+if(H.mode=='liga'){if(H.r>=H.tot){H.phase='end';const tb=sortTab(H);H.msgs.end={k:'end',champ:tb[0].pid,names:H.names,hist:H.hist,mode:'liga',table:tb,art:topArt(H)};osend(H.msgs.end)}else hostLiga();return}
 H.alive=H.win.slice();if(H.alive.length==1){H.phase='end';H.msgs.end={k:'end',champ:H.alive[0],names:H.names,hist:H.hist,mode:'copa'};osend(H.msgs.end)}else hostRound()}
 function oForce(){const H=O.H;if(!O.host||!H)return;if(H.phase=='draft'){const out=H.order.filter(p=>!H.pl[p].team);out.forEach(p=>delete H.pl[p]);H.order=H.order.filter(p=>H.pl[p]);osend({k:'kicked',pids:out});hostGo()}else if(H.phase=='cup'){H.pend.forEach(p=>H.acked.add(p));hostAdv()}}
 function hostSync(m){const H=O.H,now=Date.now();H.sy=H.sy||{};const go=(k,x)=>{if(x&&now-(H.sy[k]||0)>2500){H.sy[k]=now;osend(x)}};
 if(H.phase=='draft'&&m.ph=='lobby')go('s',H.msgs.start);else if(H.phase=='cup'&&(m.r||0)<H.r)go('r',H.msgs.round);else if(H.phase=='end'&&m.ph!='end')go('e',H.msgs.end)}
 function hostOn(m){const H=O.H;if(!H)return;
-if(m.k=='join'&&H.phase=='lobby'){if(m.v!==VER)return osend({k:'bad',to:m.pid});if(!H.pl[m.pid]&&H.order.length<16){H.pl[m.pid]={name:m.name};H.order.push(m.pid);H.names[m.pid]=m.name;hostPub()}osend(lobbyMsg())}
+if(m.k=='join'&&H.phase=='lobby'){if(m.v!==VER)return osend({k:'bad',to:m.pid});if(!H.pl[m.pid]&&H.order.length<(H.mode=='x1'?2:16)){let nm=m.name,u=Object.values(H.names),i=2;while(u.includes(nm))nm=m.name+' '+i++;H.pl[m.pid]={name:nm};H.order.push(m.pid);H.names[m.pid]=nm;hostPub()}osend(lobbyMsg())}
 else if(m.k=='again'&&(H.phase=='end'||H.phase=='lobby')){if(m.v!==VER)return;if(H.phase=='end'){H.phase='lobby';H.pl={[O.pid]:{name:O.name}};H.order=[O.pid];H.msgs={};H.hist=[];H.r=0;H.advR=0;H.tab=null}
-if(!H.pl[m.pid]&&H.order.length<16){H.pl[m.pid]={name:m.name};H.order.push(m.pid);H.names[m.pid]=m.name}hostPub();osend(lobbyMsg())}
+if(!H.pl[m.pid]&&H.order.length<(H.mode=='x1'?2:16)){const b0=H.names[m.pid]||m.name,u=Object.entries(H.names).filter(([k])=>k!=m.pid).map(([,v])=>v);let nm=b0,i=2;while(u.includes(nm))nm=b0+' '+i++;H.pl[m.pid]={name:nm};H.order.push(m.pid);H.names[m.pid]=nm}hostPub();osend(lobbyMsg())}
 else if(m.k=='hi')hostSync(m)
 else if(m.k=='ready'&&H.phase=='draft'&&H.pl[m.pid]){const ok=Array.isArray(m.team)&&m.team.length==4&&m.team.every(q=>P.some(p=>p.n==q))&&FORMS[m.form];if(ok){Object.assign(H.pl[m.pid],{team:m.team,form:m.form,style:m.style});osend({k:'prog',ready:H.order.filter(p=>H.pl[p].team)});if(H.order.every(p=>H.pl[p].team))hostGo()}}
 else if(m.k=='ack'&&H.phase=='cup'&&m.r==H.r&&H.pend.has(m.pid)){H.acked.add(m.pid);if([...H.pend].every(p=>H.acked.has(p)))hostAdv()}}
 function oOn(m){if(!O.pid)return;if(m.k=='_st'){O.stat=m.s;const e=$('#ost');if(e)e.textContent=m.s;return}
 if(m.k=='_up'){O.up=1;if(O.res){O.res();O.res=0}if(!O.host)osend({k:'join',name:O.name,v:VER});return}hostOn(m);
-if(m.k=='lobby'){O.players=m.pl;O.mode=m.mode||O.mode;O.rn=m.rn||O.rn;if(!O.lobbyOk&&m.pl.some(p=>p.pid==O.pid)){O.lobbyOk=1;clearTimeout(O.tm)}if(O.lobbyOk&&!O.mine&&(O.screen=='lobby'||!O.screen))oLobby()}
+if(m.k=='lobby'){O.players=m.pl;O.mode=m.mode||O.mode;O.bo=m.bo||O.bo;O.rn=m.rn||O.rn;if(!O.lobbyOk&&m.pl.some(p=>p.pid==O.pid)){O.lobbyOk=1;clearTimeout(O.tm)}if(O.lobbyOk&&!O.mine&&(O.screen=='lobby'||!O.screen))oLobby()}
 else if(m.k=='bad'&&m.to==O.pid)oLeave('A sua versão do jogo é diferente da do anfitrião. Atualize a página (Ctrl+Shift+R, ou feche e abra o navegador) e tente de novo.')
-else if(m.k=='start'&&O.lobbyOk&&O.screen=='lobby'){O.players=m.pl;O.mode=m.mode||O.mode;oSetup()}
+else if(m.k=='start'&&O.lobbyOk&&O.screen=='lobby'){O.players=m.pl;O.mode=m.mode||O.mode;O.bo=m.bo||O.bo;oSetup()}
 else if(m.k=='prog'){O.ready=m.ready;if(O.screen=='wait')oWait()}
 else if(m.k=='kicked'&&m.pids.includes(O.pid))oLeave('Você foi removido da sala.')
 else if(m.k=='round')oRound(m)
@@ -294,22 +300,46 @@ if(O.screen=='wait'&&O.rdy)osend(O.rdy);if(O.acked&&O.R)osend({k:'ack',r:O.R.r})
 setInterval(oBeat,4000);try{document.addEventListener('visibilitychange',()=>{if(!document.hidden)oBeat()})}catch(e){}
 const flipRes=r=>({g:[r.g[1],r.g[0]],ev:r.ev.map(e=>({...e,s:1-e.s})),win:r.g[1]>r.g[0],d:r.d,ot:r.ot});
 function otm(pid,foe){const m=O.R,d=m.teams[pid],f=foe&&m.teams[foe],g=x=>x.team.map(q=>P.find(p=>p.n==q));return mk(g(d),FORMS[d.form],d.style,m.names[pid],f?g(f):null)}
-function oRound(m){if(O.R&&O.R.r>=m.r)return;O.R=m;O.acked=0;O.mt=m.matches.find(x=>x.a==O.pid||x.b==O.pid);O.screen='round';const me=O.pid;
+function oRound(m){if(O.R&&O.R.r>=m.r)return;O.R=m;if(m.art)O.art=m.art;O.names=m.names;O.acked=0;O.mt=m.matches.find(x=>x.a==O.pid||x.b==O.pid);O.screen='round';const me=O.pid;
 if(O.mt){const opp=O.mt.a==me?O.mt.b:O.mt.a,mine=O.me=otm(me,opp),th=O.o=otm(opp,me);discover(th);
-R(`<div class=top><span>${m.label}</span><span>${m.mode=='liga'?'Liga':'Copa'}</span></div><h1>${m.label}</h1><b>${m.names[opp]}</b>${tags(th)}${palTag(th)}${palTag(mine)}${field(th.team,th.roles,{flip:1,show:1,bs:th.bs})}<h2 style="text-align:center;margin:0">⚔️ VS ⚔️</h2><b>Seu time</b>${field(mine.team,mine.roles,{show:1,bs:mine.bs})}<button class=btn onclick="oPlay()">▶ Jogar partida</button>`)}
+R(`<div class=top><span>${m.label}</span><span>${m.mode=='liga'?'Liga':m.mode=='x1'?'X1':'Copa'}</span></div><h1>${m.label}</h1><b>${m.names[opp]}</b>${tags(th)}${palTag(th)}${palTag(mine)}${field(th.team,th.roles,{flip:1,show:1,bs:th.bs})}<h2 style="text-align:center;margin:0">⚔️ VS ⚔️</h2><b>Seu time</b>${field(mine.team,mine.roles,{show:1,bs:mine.bs})}<button class=btn onclick="oPlay()">▶ Jogar partida</button>`)}
 else if(m.byes.includes(me))R(`<h1>${m.label}</h1><div class=box>Você folgou nesta rodada 🍀</div><button class=btn onclick="oHub()">Ver as partidas</button>`);else oHub()}
-async function oPlay(){const mt=O.mt,res=mt.b==O.pid?flipRes(mt.res):mt.res;await anim(O.me,O.o,res,O.R.label);SND[res.d?'whistle':res.win?'win':'lose']();$('#act').innerHTML=`<h2>${res.d?'🤝 Empate':res.win?'✅ Vitória!':'❌ Derrota'}</h2><button class=btn onclick="oHub()">Continuar</button>`}
+async function oPlay(){const mt=O.mt,res=mt.b==O.pid?flipRes(mt.res):mt.res;await anim(O.me,O.o,res,O.R.label);SND[res.d?'whistle':res.win?'win':'lose']();$('#act').innerHTML=`<h2>${res.d?'🤝 Empate':res.win?'✅ Vitória!':'❌ Derrota'}</h2><button class=btn onclick="${O.R.mode=='x1'?'oResults()':'oHub()'}">Continuar</button>`}
 function oHub(){const m=O.R,nm=m.names,me=O.pid;O.screen='hub';
 R(`<h1>${m.label}</h1>${ost()}<p class=mut>Veja as outras partidas desta rodada. Os resultados só aparecem quando você pedir.</p>${m.matches.map((x,i)=>{const own=x.a==me||x.b==me;return `<div class=box><b>${nm[x.a]}</b> x <b>${nm[x.b]}</b>${own?' <span class=mut>(sua partida)</span>':`<br><button class="btn ghost" style="margin-top:6px" onclick="oWatch(${i})">▶ Assistir</button>`}</div>`}).join('')}${m.byes.length?`<p class=mut>Folga: ${m.byes.map(p=>nm[p]).join(', ')}</p>`:''}<button class=btn onclick="oResults()">📊 Ver resultados${O.mt&&!O.acked?' e continuar':''}</button>`)}
 async function oWatch(i){const m=O.R,x=m.matches[i],nm=m.names;try{const a=otm(x.a,x.b),b=otm(x.b,x.a);await anim(a,b,x.res,m.label,[nm[x.a],nm[x.b]]);if(O.R===m)$('#act').innerHTML=`<h2>${nm[x.a]} ${x.res.g[0]} x ${x.res.g[1]} ${nm[x.b]}${x.res.ot?' (OT)':''}</h2><button class=btn onclick="oHub()">⬅ Voltar às partidas</button>`}catch(e){}}
 const tabH=(tb,nm,me)=>`<table class=tb><tr><th>#</th><th>Jogador</th><th>Pts</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th></tr>${tb.map((r,i)=>`<tr class="${r.pid==me?'me':''}"><td>${i+1}</td><td>${nm[r.pid]}</td><td><b>${r.pts}</b></td><td>${r.w+r.d+r.l}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gf-r.ga>0?'+':''}${r.gf-r.ga}</td></tr>`).join('')}</table>`;
 function oResults(){const m=O.R,nm=m.names,part=!!O.mt||m.byes.includes(O.pid);O.screen='res';
 const line=x=>{const a=x.res.g[0]>x.res.g[1],b=x.res.g[1]>x.res.g[0];return `${a?'<b>':''}${nm[x.a]} ${x.res.g[0]}${a?'</b>':''} x ${b?'<b>':''}${x.res.g[1]} ${nm[x.b]}${b?'</b>':''}${x.res.ot?' <span class=mut>(OT)</span>':''}`};
-R(`<h1>${m.label}</h1>${ost()}<div class=box>${m.matches.map(line).join('<br>')}${m.byes.length?`<br><span class=mut>Folga: ${m.byes.map(p=>nm[p]).join(', ')}</span>`:''}</div>${m.table?`<h2>Classificação</h2>${tabH(m.table,nm,O.pid)}`:''}${part?(O.acked?'<p class=mut>Aguardando os outros jogadores...</p>':'<button class=btn onclick="oAck()">Continuar</button>'):'<p class=mut>Você está assistindo. Aguardando a próxima rodada...</p>'}<button class="btn ghost" onclick="oHub()">⬅ Voltar às partidas</button>${O.host?'<button class="btn ghost" onclick="oForce()">⏭️ Forçar avanço</button>':''}`)}
+R(`<h1>${m.label}</h1>${ost()}<div class=box>${m.matches.map(line).join('<br>')}${m.byes.length?`<br><span class=mut>Folga: ${m.byes.map(p=>nm[p]).join(', ')}</span>`:''}</div>${m.score?`<p>Série: <b>${Object.entries(m.score).map(([p,s])=>nm[p]+' '+s).join(' x ')}</b>${m.bo==3?' · melhor de 3':''}</p>`:''}${m.table?`<h2>Classificação</h2>${tabH(m.table,nm,O.pid)}<button class="btn ghost" onclick="oArt('oResults()')">⚽ Artilharia</button>`:''}${part?(O.acked?'<p class=mut>Aguardando os outros jogadores...</p>':'<button class=btn onclick="oAck()">Continuar</button>'):'<p class=mut>Você está assistindo. Aguardando a próxima rodada...</p>'}${m.mode=='x1'?'':'<button class="btn ghost" onclick="oHub()">⬅ Voltar às partidas</button>'}${O.host?'<button class="btn ghost" onclick="oForce()">⏭️ Forçar avanço</button>':''}`)}
 function oAck(){if(O.acked)return;O.acked=1;osend({k:'ack',r:O.R.r});oResults()}
-function oEnd(m){O.screen='end';const nm=m.names,w=m.champ==O.pid;
-R(`<h1>${w?'🏆 VOCÊ É O CAMPEÃO!':'🏆 Campeão: '+nm[m.champ]}</h1>${m.table?`<h2>Classificação final</h2>${tabH(m.table,nm,O.pid)}`:''}<details ${m.table?'':'open'}><summary>Ver todos os resultados</summary>${m.hist.map(h=>`<h2>${h.label}</h2><div class=box>${h.ms.map(x=>`${nm[x.a]} <b>${x.g[0]} x ${x.g[1]}</b> ${nm[x.b]}${x.ot?' (OT)':''}`).join('<br>')}</div>`).join('')}</details><button class=btn onclick="oAgain()">🔁 Jogar de novo</button><button class="btn ghost" onclick="oLeave()">Sair da sala</button>`);if(w)SND.win()}
+function oArt(back){const nm=O.names||{},a=O.art||[];R(`<h1>⚽ Artilharia</h1><div class=box>${a.length?a.map((x,i)=>`${['🥇','🥈','🥉'][i]} <b>${x.n}</b> · ${x.g} gol${x.g>1?'s':''}<br><span class=mut>jogador: <b>${nm[x.o]}</b></span>`).join('<br><br>'):'Ninguém marcou ainda.'}</div><button class=btn onclick="${back}">⬅ Voltar</button>`)}
+function oEnd(m){O.screen='end';O.endMsg=m;O.names=m.names;if(m.art)O.art=m.art;const nm=m.names,w=m.champ==O.pid,rb=m.table&&m.table.length>2&&m.table[m.table.length-1].pid==O.pid;
+R(`<h1>${w?'🏆 VOCÊ É O CAMPEÃO!':'🏆 Campeão: '+nm[m.champ]}</h1>${rb?'<div class=box style="border-color:var(--bad);text-align:center"><h2 style="margin:4px">⬇️ Você foi rebaixado!</h2></div>':''}${m.score?`<h2>Série: ${Object.entries(m.score).map(([p,s])=>nm[p]+' '+s).join(' x ')}</h2>`:''}${m.table?`<h2>Classificação final</h2>${tabH(m.table,nm,O.pid)}<button class="btn ghost" onclick="oArt('oEnd(O.endMsg)')">⚽ Artilharia</button>`:''}<details ${m.table?'':'open'}><summary>Ver todos os resultados</summary>${m.hist.map(h=>`<h2>${h.label}</h2><div class=box>${h.ms.map(x=>`${nm[x.a]} <b>${x.g[0]} x ${x.g[1]}</b> ${nm[x.b]}${x.ot?' (OT)':''}`).join('<br>')}</div>`).join('')}</details><button class=btn onclick="oAgain()">🔁 Jogar de novo</button><button class="btn ghost" onclick="oLeave()">Sair da sala</button>`);if(rb)SND.lose();else if(w)SND.win()}
 function oAgain(){O.mine=0;O.R=null;O.acked=0;O.ready=[];O.rdy=null;O.mt=null;O.screen='lobby';osend({k:'again',name:O.name,v:VER});oLobby()}
+
+// ===== TRANSFERÊNCIA DE PROGRESSO (código da conta) =====
+const A32='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',SVT='bazinga4x4/save/',r8=()=>Array.from({length:8},()=>A32[Math.random()*32|0]).join('');
+const accKeys=()=>{const k=[...SYN.map(SKEY),...SPEC.map(s=>s[3]),...AVR.map(s=>'A|'+s[0]+'|'+s[1]+'|'+s[2])];return{r:[...new Set(k)].sort(),p:P.map(p=>p.n).sort()}};
+const hsh=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0)&65535};
+function accEnc(){const K=accKeys(),all=K.r.concat(K.p),bits=[];for(let i=15;i>=0;i--)bits.push((hsh(all.join('\n'))>>i)&1);
+all.forEach((k,i)=>bits.push((i<K.r.length?LV[k]:DX[k])?1:0));let s='';for(let i=0;i<bits.length;i+=5){let v=0;for(let j=0;j<5;j++)v=v*2+(bits[i+j]||0);s+=A32[v]}return s.replace(/(.{5})(?=.)/g,'$1-')}
+function accDec(c){const K=accKeys(),all=K.r.concat(K.p),bits=[];for(const ch of c.replace(/[^A-Z2-9]/g,'')){const v=A32.indexOf(ch);if(v<0)return null;for(let j=4;j>=0;j--)bits.push((v>>j)&1)}
+if(bits.length<16+all.length)return null;let h=0;for(let i=0;i<16;i++)h=h*2+bits[i];if(h!==hsh(all.join('\n')))return{err:'Esse código é de outra versão do jogo. Atualize a página nos dois aparelhos (Ctrl+Shift+R).'};
+return{r:K.r.filter((k,i)=>bits[16+i]),p:K.p.filter((n,i)=>bits[16+K.r.length+i])}}
+function accApply(d){let nr=0,np=0;d.r.forEach(k=>{if(!LV[k]){LV[k]=1;nr++}});d.p.forEach(n=>{if(!DX[n]){DX[n]=1;np++}});try{localStorage.setItem(LK,JSON.stringify(LV));localStorage.setItem(DK,JSON.stringify(DX))}catch(e){}return{nr,np}}
+function brRun(setup,ms){return new Promise(res=>{if(typeof mqtt==='undefined')return res(null);let fin=0,cs=[];const done=v=>{if(fin)return;fin=1;cs.forEach(c=>{try{c.end(true)}catch(e){}});res(v)};setTimeout(()=>done(setup.fin?setup.fin():null),ms);
+BR.forEach(b=>{try{const c=mqtt.connect(b.u,{clientId:'bzs'+rid(10),connectTimeout:7000,reconnectPeriod:0});cs.push(c);c.on('error',()=>{});setup.on(c,done)}catch(e){}})})}
+function savePub(code,data){let n=0;return brRun({on:(c,done)=>c.on('connect',()=>c.publish(SVT+code,data,{qos:1,retain:true},()=>{n++;if(n>=BR.length)done(n)})),fin:()=>n},7000)}
+function saveGet(code){return brRun({on:(c,done)=>{c.on('connect',()=>c.subscribe(SVT+code,{qos:1}));c.on('message',(tp,m)=>{const s=m.toString();if(s)done(s)})}},9000)}
+function conta(msg){R(`<h1>🔑 Código da conta</h1><p class=mut>Leva o seu progresso (reações e personagens) para outro aparelho. É uma cópia feita na hora: os aparelhos não ficam sincronizados.</p>
+<div class=box><b>Copiar daqui para outro aparelho</b><div id=accbox><button class=btn onclick="accShow()">👁️ Revelar código da conta</button></div></div>
+<div class=box><b>Receber progresso aqui</b><input id=ac class=inp placeholder="Cole o código aqui"><button class=btn onclick="accImport()">📥 Importar código</button><p id=accmsg class=mut>${msg||''}</p></div><button class="btn ghost" onclick="livro()">Voltar</button>`)}
+async function accShow(){const b=$('#accbox');b.innerHTML='<p class=mut>Gerando código...</p>';const long=accEnc(),code=r8(),n=await savePub(code,long);
+b.innerHTML=`${n?`<div style="font:800 34px ui-monospace,monospace;letter-spacing:4px;text-align:center;margin:10px 0">${code.slice(0,4)}-${code.slice(4)}</div><p class=mut>Digite este código no outro aparelho (internet nos dois). Use logo: o servidor pode apagá-lo depois de um tempo.</p>`:'<p class=bad>Não consegui salvar online. Use o código completo abaixo.</p>'}<details><summary>Código completo (funciona sem internet)</summary><p style="word-break:break-all;font-family:ui-monospace,monospace">${long}</p></details>`}
+async function accImport(){const raw=(($('#ac')&&$('#ac').value)||'').toUpperCase().replace(/[^A-Z2-9]/g,''),m=$('#accmsg'),say=s=>{if(m)m.textContent=s};if(!raw)return say('Cole um código primeiro.');
+let long=raw;if(raw.length<=10){say('Buscando o código...');long=await saveGet(raw.slice(0,8));if(!long)return say('Código não encontrado ou expirado. Use o código completo do outro aparelho.')}
+const d=accDec(long);if(!d)return say('Código inválido.');if(d.err)return say(d.err);const r=accApply(d);say(`✅ Progresso importado: ${r.nr} reação(ões) e ${r.np} personagem(ns) novos.`);toast('🔑 Progresso importado')}
 
 home();
 </script></body></html>
